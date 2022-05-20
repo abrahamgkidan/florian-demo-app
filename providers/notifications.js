@@ -9,27 +9,7 @@ import { Platform } from "react-native";
 import * as Device from "expo-device";
 import * as Notifications from "expo-notifications";
 
-// Can use this function below, OR use Expo's Push Notification Tool-> https://expo.dev/notifications
-export async function sendPushNotification(expoPushToken, message) {
-  const pushMessage = message || {
-    to: expoPushToken,
-    sound: "default",
-    title: "Demo app",
-    body: "for Florian by freelancer Abraham Gebrekidan!",
-    data: { someData: "goes here" },
-  };
-
-  await fetch("https://exp.host/--/api/v2/push/send", {
-    method: "POST",
-    headers: {
-      Accept: "application/json",
-      "Accept-encoding": "gzip, deflate",
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify(pushMessage),
-  });
-}
-
+// Excerpted from Expo
 export async function registerForPushNotificationsAsync() {
   let token;
   if (Device.isDevice) {
@@ -62,6 +42,28 @@ export async function registerForPushNotificationsAsync() {
   return token;
 }
 
+// Exerpted from Expo
+export async function sendPushNotification(expoPushToken, message = {}) {
+  const pushMessage = message || {
+    to: expoPushToken,
+    ...message,
+    sound: "default",
+    title: "Demo app",
+    body: "App developed for Florian by freelancer: Abraham Gebrekidan!",
+    data: { someData: "goes here" },
+  };
+
+  await fetch("https://exp.host/--/api/v2/push/send", {
+    method: "POST",
+    headers: {
+      Accept: "application/json",
+      "Accept-encoding": "gzip, deflate",
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(pushMessage),
+  });
+}
+
 const ExpoPushNotificationsContext = createContext();
 
 export const ExpoPushNotificationsProvider = ({ children, options }) => {
@@ -75,7 +77,7 @@ export const ExpoPushNotificationsProvider = ({ children, options }) => {
       handleNotification: async () =>
         options || {
           shouldShowAlert: true,
-          shouldPlaySound: false,
+          shouldPlaySound: true,
           shouldSetBadge: false,
         },
     });
@@ -105,7 +107,7 @@ export const ExpoPushNotificationsProvider = ({ children, options }) => {
   }, []);
 
   const sendNotification = (message) => {
-    return sendPushNotification(expoPushToken, message);
+    sendPushNotification(expoPushToken, message);
   };
 
   return (
@@ -120,5 +122,4 @@ export const ExpoPushNotificationsProvider = ({ children, options }) => {
 export const useExpoPushNotifications = () => {
   return useContext(ExpoPushNotificationsContext);
 };
-
 // export default useExpoPushNotifications;
