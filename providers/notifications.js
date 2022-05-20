@@ -109,7 +109,9 @@ export const ExpoPushNotificationsProvider = ({ children, options }) => {
   };
 
   return (
-    <ExpoPushNotificationsContext.Provider value={{ sendNotification }}>
+    <ExpoPushNotificationsContext.Provider
+      value={{ expoPushToken, notification, sendNotification }}
+    >
       {children}
     </ExpoPushNotificationsContext.Provider>
   );
