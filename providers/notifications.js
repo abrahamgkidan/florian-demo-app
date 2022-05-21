@@ -80,7 +80,7 @@ export const ExpoPushNotificationsProvider = ({ children, options }) => {
   const notificationListener = useRef();
   const responseListener = useRef();
 
-  // Note: An alternative method of responding to user action on notifications 
+  // Note: An alternative method of responding to user action on notifications
   // const lastNotificationResponse = Notifications.useLastNotificationResponse();
   // useEffect(() => {
   //   if (lastNotificationResponse) {
