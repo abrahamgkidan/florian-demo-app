@@ -42,6 +42,7 @@ const ExpoWebView = () => {
 
   useEffect(() => {
     if (notificationResponse && isValidWebURL(notificationResponse)) {
+      setInputText(notificationResponse);
       setWebsiteURL(notificationResponse);
     }
   }, [notificationResponse]);
