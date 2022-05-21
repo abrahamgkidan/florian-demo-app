@@ -1,5 +1,5 @@
 const API_KEY = "ab44cca3d9294d06b8f9e776113cf1ae";
-const GOOGLE_NEWS_API = `https://newsapi.org/v2/top-headlines?sources=techcrunch&apiKey=${API_KEY}`;
+const NEWS_API = `https://newsapi.org/v2/top-headlines?sources=techcrunch&apiKey=${API_KEY}`;
 
 function randomIntFromInterval(min, max) {
   // min and max included
@@ -7,7 +7,7 @@ function randomIntFromInterval(min, max) {
 }
 
 export function fetchNews(cb) {
-  fetch(GOOGLE_NEWS_API)
+  fetch(NEWS_API)
     .then((res) => res.json())
     .then(({ status, articles }) => {
       if (status) {
