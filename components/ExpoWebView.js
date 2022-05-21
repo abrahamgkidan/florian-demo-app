@@ -6,8 +6,14 @@ import { WebView } from "react-native-webview";
 
 import { useExpoPushNotifications } from "../providers/notifications";
 
+import { fetchNews } from "../fetchNews";
+
+const isValidWebURL = (url) =>
+  /[(http(s)?):\/\/(www\.)?a-zA-Z0-9@:%._\+~#=]{2,256}\.[a-z]{2,6}\b([-a-zA-Z0-9@:%_\+.~#?&//=]*)/gi.test(
+    url
+  );
 const ExpoWebView = () => {
-  const { sendNotification } = useExpoPushNotifications();
+  const { sendNotification, notificationResponse } = useExpoPushNotifications();
   const [websiteURL, setWebsiteURL] = useState("https://expo.dev");
   const [inputText, setInputText] = useState("https://expo.dev");
 
@@ -15,11 +21,7 @@ const ExpoWebView = () => {
     setInputText(text);
   };
   const handleURLChange = () => {
-    const isValidURL =
-      /[(http(s)?):\/\/(www\.)?a-zA-Z0-9@:%._\+~#=]{2,256}\.[a-z]{2,6}\b([-a-zA-Z0-9@:%_\+.~#?&//=]*)/gi.test(
-        inputText
-      );
-    if (isValidURL) {
+    if (isValidWebURL(inputText)) {
       setWebsiteURL(inputText);
     } else {
       sendNotification({
@@ -29,8 +31,29 @@ const ExpoWebView = () => {
     }
   };
 
+  const handleLoadNews = () => {
+    fetchNews((articles) => {
+      // console.log("Articles: ", articles);
+      articles.map(({ title, content, url }) => {
+        sendNotification({ title, body: content, data: { url } });
+      });
+    });
+  };
+
+  useEffect(() => {
+    if (notificationResponse && isValidWebURL(notificationResponse)) {
+      setWebsiteURL(notificationResponse);
+    }
+  }, [notificationResponse]);
+
   return (
     <View style={styles.container}>
+      <View>
+        <Button compact onPress={handleLoadNews} style={{ marginLeft: 10 }}>
+          Load news
+        </Button>
+        <Text style={{ textAlign: "center" }}>- OR -</Text>
+      </View>
       <Text style={styles.title}>Try a website within app!</Text>
       <View style={styles.inputContainer}>
         <TextInput
@@ -49,6 +72,7 @@ const ExpoWebView = () => {
           Display
         </Button>
       </View>
+
       <WebView style={styles.container} source={{ uri: websiteURL }} />
     </View>
   );

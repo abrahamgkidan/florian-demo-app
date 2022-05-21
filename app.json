@@ -17,6 +17,7 @@
     "assetBundlePatterns": [
       "**/*"
     ],
+    "useNextNotificationsApi": true,
     "ios": {
       "supportsTablet": true
     },

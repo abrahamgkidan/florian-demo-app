@@ -25,7 +25,7 @@ export async function registerForPushNotificationsAsync() {
       return;
     }
     token = (await Notifications.getExpoPushTokenAsync()).data;
-    console.log(token);
+    console.log(`Expo push token: ${token}`);
   } else {
     alert("Must use physical device for Push Notifications");
   }
@@ -44,13 +44,12 @@ export async function registerForPushNotificationsAsync() {
 
 // Exerpted from Expo
 export async function sendPushNotification(expoPushToken, message = {}) {
-  const pushMessage = message || {
+  const pushMessage = {
     to: expoPushToken,
-    ...message,
     sound: "default",
     title: "Demo app",
-    body: "App developed for Florian by freelancer: Abraham Gebrekidan!",
-    data: { someData: "goes here" },
+    body: "Expo app developed for Florian by freelancer: Abraham Gebrekidan!",
+    ...message,
   };
 
   await fetch("https://exp.host/--/api/v2/push/send", {
@@ -66,22 +65,30 @@ export async function sendPushNotification(expoPushToken, message = {}) {
 
 const ExpoPushNotificationsContext = createContext();
 
+Notifications.setNotificationHandler({
+  handleNotification: async () => ({
+    shouldShowAlert: true,
+    shouldPlaySound: true,
+    shouldSetBadge: false,
+  }),
+});
+
 export const ExpoPushNotificationsProvider = ({ children, options }) => {
   const [expoPushToken, setExpoPushToken] = useState("");
   const [notification, setNotification] = useState(false);
+  const [notificationResponse, setNotificationResponse] = useState(false);
   const notificationListener = useRef();
   const responseListener = useRef();
 
-  useEffect(() => {
-    Notifications.setNotificationHandler({
-      handleNotification: async () =>
-        options || {
-          shouldShowAlert: true,
-          shouldPlaySound: true,
-          shouldSetBadge: false,
-        },
-    });
+  // Note: An alternative method of responding to user action on notifications 
+  // const lastNotificationResponse = Notifications.useLastNotificationResponse();
+  // useEffect(() => {
+  //   if (lastNotificationResponse) {
+  //     setNotificationResponse(lastNotificationResponse.notification.request.content.data.url);
+  //   }
+  // }, [lastNotificationResponse]);
 
+  useEffect(() => {
     registerForPushNotificationsAsync().then((token) =>
       setExpoPushToken(token)
     );
@@ -89,13 +96,16 @@ export const ExpoPushNotificationsProvider = ({ children, options }) => {
     // This listener is fired whenever a notification is received while the app is foregrounded
     notificationListener.current =
       Notifications.addNotificationReceivedListener((notification) => {
+        console.log("Notification: ", notification);
         setNotification(notification);
       });
 
     // This listener is fired whenever a user taps on or interacts with a notification (works when app is foregrounded, backgrounded, or killed)
     responseListener.current =
       Notifications.addNotificationResponseReceivedListener((response) => {
-        console.log(response);
+        console.log("Notification response: ", response);
+        console.log(response.notification.request.content.data.url);
+        setNotificationResponse(response.notification.request.content.data.url);
       });
 
     return () => {
@@ -106,13 +116,18 @@ export const ExpoPushNotificationsProvider = ({ children, options }) => {
     };
   }, []);
 
-  const sendNotification = (message) => {
-    sendPushNotification(expoPushToken, message);
+  const sendNotification = async (message) => {
+    await sendPushNotification(expoPushToken, message);
   };
 
   return (
     <ExpoPushNotificationsContext.Provider
-      value={{ expoPushToken, notification, sendNotification }}
+      value={{
+        expoPushToken,
+        notification,
+        notificationResponse,
+        sendNotification,
+      }}
     >
       {children}
     </ExpoPushNotificationsContext.Provider>
@@ -122,4 +137,3 @@ export const ExpoPushNotificationsProvider = ({ children, options }) => {
 export const useExpoPushNotifications = () => {
   return useContext(ExpoPushNotificationsContext);
 };
-// export default useExpoPushNotifications;
